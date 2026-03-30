@@ -125,9 +125,6 @@ st.download_button(
     mime="application/pdf"
 )
 
-# ===== 하단 =====
-st.markdown("---")
-st.markdown("[👉 EBSi 바로가기](https://www.ebsi.co.kr)")
 # ===== 하단 링크 =====
 st.markdown("---")
 st.markdown("내가 틀린 문제를 남들은 얼마나 틀렸을까? 전국연합학력평가 정답률 확인")
