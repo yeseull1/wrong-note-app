@@ -1,6 +1,8 @@
 import streamlit as st
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
 import tempfile
 
 st.title("📒 오답노트 생성기")
@@ -59,7 +61,7 @@ st.subheader("📊 오답 분석")
 stats = {"개념 부족":0, "실수":0, "시간 부족":0, "이해 부족":0}
 
 for n in st.session_state.notes:
-    if n["이유"] in stats:   # 🔥 안전 처리 추가
+    if n["이유"] in stats:
         stats[n["이유"]] += 1
 
 for key, value in stats.items():
@@ -68,7 +70,6 @@ for key, value in stats.items():
 # ===== 피드백 =====
 st.subheader("📌 맞춤 피드백")
 
-# 🔥 키 이름 맞춰서 수정
 if stats.get("개념 부족", 0) > 0:
     st.write("개념 복습이 필요합니다.")
 if stats.get("실수", 0) > 0:
@@ -88,24 +89,31 @@ elif category == "탐구":
 elif category == "영어":
     st.write("모르는 어휘를 모아 암기하며 다시 독해해보세요!")
 
-# ===== PDF 생성 =====
+# ===== PDF 생성 (한글 지원 + 이미지 포함) =====
+pdfmetrics.registerFont(TTFont('NanumGothic', 'fonts/NanumGothic.ttf'))
+
+korean_style = ParagraphStyle(
+    name='Korean',
+    fontName='NanumGothic',
+    fontSize=12,
+    leading=15
+)
+
 def make_pdf(notes):
     temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
     doc = SimpleDocTemplate(temp_pdf.name)
-    styles = getSampleStyleSheet()
     elements = []
 
     for i, n in enumerate(notes):
-        elements.append(Paragraph(f"{i+1}번", styles["Title"]))
-        elements.append(Paragraph(f"과목: {n['계열']} - {n['과목']}", styles["Normal"]))
-        elements.append(Paragraph(f"단원: {n['단원']}", styles["Normal"]))
-        elements.append(Paragraph(f"문제: {n['문제']}", styles["Normal"]))
-        elements.append(Paragraph(f"내 답: {n['내 답']}", styles["Normal"]))
-        elements.append(Paragraph(f"정답: {n['정답']}", styles["Normal"]))
-        elements.append(Paragraph(f"이유: {n['이유']} ({n['세부 이유']})", styles["Normal"]))
+        elements.append(Paragraph(f"{i+1}번", korean_style))
+        elements.append(Paragraph(f"과목: {n['계열']} - {n['과목']}", korean_style))
+        elements.append(Paragraph(f"단원: {n['단원']}", korean_style))
+        elements.append(Paragraph(f"문제: {n['문제']}", korean_style))
+        elements.append(Paragraph(f"내 답: {n['내 답']}", korean_style))
+        elements.append(Paragraph(f"정답: {n['정답']}", korean_style))
+        elements.append(Paragraph(f"이유: {n['이유']} ({n['세부 이유']})", korean_style))
         elements.append(Spacer(1, 10))
 
-        # 🔥 이미지 안정 처리
         if n["이미지"] is not None:
             img_temp = tempfile.NamedTemporaryFile(delete=False)
             img_temp.write(n["이미지"].getvalue())
@@ -126,6 +134,11 @@ st.download_button(
     file_name="오답노트.pdf",
     mime="application/pdf"
 )
+
+# ===== 하단 링크 =====
+st.markdown("---")
+st.markdown("내가 틀린 문제를 남들은 얼마나 틀렸을까? 전국연합학력평가 정답률 확인")
+st.markdown("[👉 EBSi 바로가기](https://www.ebsi.co.kr)")
 
 # ===== 하단 링크 =====
 st.markdown("---")
