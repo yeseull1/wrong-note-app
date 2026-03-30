@@ -1,6 +1,6 @@
 import streamlit as st
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 import tempfile
@@ -13,7 +13,7 @@ if "notes" not in st.session_state:
 
 # ===== 입력 =====
 category = st.selectbox("계열 선택", ["국어", "수학", "탐구", "영어", "기타"])
-subject = st.text_input("세부 과목 (예: 언어와 매체, 확률과 통계, 생활과 윤리, 지구과학 1, 한국사...)")
+subject = st.text_input("세부 과목")
 unit = st.text_input("단원")
 question = st.text_area("문제")
 
@@ -73,24 +73,14 @@ st.subheader("📌 맞춤 피드백")
 if stats.get("개념 부족", 0) > 0:
     st.write("개념 복습이 필요합니다.")
 if stats.get("실수", 0) > 0:
-    st.write("문제를 꼼꼼히 읽고, 검토하는 습관을 들이세요.")
+    st.write("문제를 꼼꼼히 읽고 검토하는 습관을 들이세요.")
 if stats.get("시간 부족", 0) > 0:
     st.write("시간 관리 연습이 필요합니다.")
 if stats.get("이해 부족", 0) > 0:
-    st.write("문제의 조건을 해석하는 연습이 필요합니다.")
+    st.write("문제 조건 해석 연습이 필요합니다.")
 
-# 과목별 피드백
-if category == "국어":
-    st.write("지문을 이해할 수 있도록 구조화하며 읽어보세요!")
-elif category == "수학":
-    st.write("오답 유형과 유사한 문제를 다양하게 접해보세요!")
-elif category == "탐구":
-    st.write("틀린 선지를 따로 모아 분석해보세요!")
-elif category == "영어":
-    st.write("모르는 어휘를 모아 암기하며 다시 독해해보세요!")
-
-# ===== PDF 생성 (한글 지원 + 이미지 포함) =====
-pdfmetrics.registerFont(TTFont('NanumGothic', 'fonts/NanumGothic.ttf'))
+# ===== PDF 생성 (한글 완벽 지원) =====
+pdfmetrics.registerFont(TTFont('NanumGothic', 'NanumGothic.ttf'))
 
 korean_style = ParagraphStyle(
     name='Korean',
@@ -135,11 +125,9 @@ st.download_button(
     mime="application/pdf"
 )
 
-# ===== 하단 링크 =====
+# ===== 하단 =====
 st.markdown("---")
-st.markdown("내가 틀린 문제를 남들은 얼마나 틀렸을까? 전국연합학력평가 정답률 확인")
 st.markdown("[👉 EBSi 바로가기](https://www.ebsi.co.kr)")
-
 # ===== 하단 링크 =====
 st.markdown("---")
 st.markdown("내가 틀린 문제를 남들은 얼마나 틀렸을까? 전국연합학력평가 정답률 확인")
